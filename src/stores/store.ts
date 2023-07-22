@@ -22,6 +22,7 @@ export const useStore = defineStore('store', {
       channelAlternative: { channel: 0, alternative: 0 } as ChannelAlternative, // currently selected channel and alternative
       options: {
         displayBy: 'paragraph' as 'word' | 'sentence' | 'paragraph' | 'utterance',
+        showDetails: false,
       },
       // audioPath: 'Fri-09-07-2007A.ogg',
       // jsonPath: 'Fri-09-07-2007A.ogg.json',
@@ -55,6 +56,9 @@ export const useStore = defineStore('store', {
     },
     activeRegion: (state) => {
       return state.wsRegions?.getRegions()[0]
+    },
+    getSpeaker: (state) => (speaker: number) => {
+      return state.transcriptionMetadata.speakers[speaker] || `Speaker ${speaker}`
     },
   },
   actions: {

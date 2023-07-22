@@ -45,8 +45,8 @@ onMounted(() => {
   const wavesurfer = WaveSurfer.create({
     media: audio,
     container: '#waveform',
-    waveColor: '#4F4A85',
-    progressColor: '#383351',
+    waveColor: '#00bd7e',
+    progressColor: '#006644',
     url: audioPath,
 
     minPxPerSec: 5,

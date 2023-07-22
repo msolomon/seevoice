@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useStore } from '@/stores/store';
 import type { Word } from '@/types/deepgram';
+
+const store = useStore()
 
 const props = defineProps<{
   word: Word
@@ -13,7 +16,7 @@ const props = defineProps<{
     <td>
       {{ props.word.confidence.toLocaleString(undefined, { style: 'percent' }) }}
       {{ props.word.confidence > 0.9 ? '👍' : (props.word.confidence < 0.5 ? '👎' : '') }} </td>
-    <td> {{ props.word.speaker }} </td>
+    <td> {{ store.speakers[props.word.speaker] }} </td>
     <td>
       {{ props.word.speaker_confidence.toLocaleString(undefined, { style: 'percent' }) }}
       {{ props.word.speaker_confidence > 0.9 ? '👍' : (props.word.speaker_confidence < 0.5 ? '👎' : '') }} </td>

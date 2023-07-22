@@ -45,7 +45,7 @@ function title() {
       </table>
       <br />
     </div>
-    <div v-if="paragraphs.length > 0" class="paragraphs-details">
+    <!-- <div v-if="paragraphs.length > 0" class="paragraphs-details">
       <h3>Paragraphs</h3>
       <p class="desc">
         Shows the word in its surrounding paragraph, including alternative transcriptions.
@@ -59,7 +59,7 @@ function title() {
         </thead>
         <ParagraphDetail v-for="paragraph in paragraphs" :paragraph="paragraph" />
       </table>
-    </div>
+    </div> -->
   </div>
 </template>
 

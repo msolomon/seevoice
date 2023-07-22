@@ -61,13 +61,36 @@ async function handleUpload(file: File) {
     store.wavesurfer?.load(url)
   }
 }
+
+function flatten(data: object) {
+  let result: any = {}
+  function recurse(cur: any, prop) {
+    if (Object(cur) !== cur) {
+      result[prop] = cur
+    } else if (Array.isArray(cur)) {
+      for (let i = 0; i < cur.length; i++)
+        recurse(cur[i], prop + "[" + i + "]");
+    } else {
+      let isEmpty = true;
+      for (let p in cur) {
+        isEmpty = false;
+        recurse(cur[p], prop ? prop + "." + p : p);
+      }
+      if (isEmpty && prop)
+        result[prop] = {};
+    }
+  }
+  recurse(data, "");
+  return result;
+}
+
 </script>
 
 <template>
   {{ maybeRedirect() }}
   <main>
     <div>
-      <div class="uploads">
+      <!-- <div class="uploads">
         <form method="post" enctype="multipart/form-data">
           <label>
             Audio file:
@@ -90,18 +113,29 @@ async function handleUpload(file: File) {
               :value="router.currentRoute.value.query.jsonPath">
           </label>
         </form>
-      </div>
+      </div> -->
       <WaveSurfer />
+      <div>
+        <label>
+          Show Details
+          <input type="checkbox" v-model="store.options.showDetails">
+        </label>
+      </div>
     </div>
     <div class="wrapper">
       <Suspense>
         <Transcription />
       </Suspense>
-      <div class="detail-wrapper">
+      <div class="detail-wrapper" v-if="store.options.showDetails">
         <Details />
         <div class="metadata">
           <h3>Metadata</h3>
-          <pre>{{ store.transcriptionMetadata }}</pre>
+          <div>
+            <div class="wrapper" v-for="(md, k) in flatten(store.transcriptionMetadata)" :key="k">
+              <span class="metadataKey">{{ k }}</span>:
+              <pre class="metadataValue">{{ md }}</pre>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -119,9 +153,7 @@ main {
 }
 
 .wrapper {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: 1fr;
+  display: flex;
   overflow-y: auto;
 }
 
@@ -139,11 +171,19 @@ label {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: min-content min-content min-content min-content;
-  /* overflow-y: auto; */
+  flex: 1;
 }
 
-.detail-wrapper div {
+.detail-wrapper>div {
   margin-bottom: 2em;
+}
+
+.metadataKey {
+  font-weight: bold;
+}
+
+.metadataValue {
+  margin-left: 1em;
 }
 </style>
 ```

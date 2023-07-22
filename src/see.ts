@@ -13,6 +13,7 @@ export function parseDeepgramResult(result: DeepgramResult): void {
     for (const alternative of channel.alternatives) {
       alternative.words.forEach((word) => {
         fillIndex(store.indices.word, word)
+        if (store.speakers[word.speaker] === undefined) store.speakers[word.speaker] = `Speaker ${word.speaker}`
       })
 
       alternative.paragraphs?.paragraphs.forEach((paragraph) => {

@@ -64,12 +64,16 @@ const paragraphs = store.getAlternative.value.paragraphs?.paragraphs
 </script>
 
 <style scoped>
+.transcription {
+  flex: 2;
+}
+
 .wrapper {
   /* display: flex; */
   display: grid;
   /* flex-direction: column; */
   grid-template-columns: min-content 1fr;
-  column-gap: 2em;
+  /* column-gap: 2em; */
   overflow-y: auto;
 }
 

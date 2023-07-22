@@ -32,11 +32,13 @@ function playing() {
 }
 
 const paragraphWords = getWords()
+const speakers = store.speakers
 
 </script>
 
 <template>
-  <span class="speaker" v-if="props.paragraph.speaker != props.lastSpeaker">Speaker {{ props.paragraph.speaker }}</span>
+  <textarea rows="1" cols="12" class="speaker" v-if="props.paragraph.speaker != props.lastSpeaker"
+    v-model="speakers[props.paragraph.speaker]" />
   <span class="speaker" v-else=""></span>
   <div :class="'words ' + playing()">
     <WordVue v-for=" word in paragraphWords " :key="JSON.stringify(word)" :word="word" />
@@ -46,16 +48,19 @@ const paragraphWords = getWords()
 <style >
 .speaker {
   font-weight: bold;
-  white-space: nowrap;
+  border: none;
+  text-align: right;
+  padding-right: 1em;
 }
 
 .words {
   margin-left: 1em;
   text-indent: -1em;
+  width: fit-content;
 }
 
 .playing {
-  background-color: lightblue;
+  background-color: #00bd7e33;
   border-radius: 4px;
 }
 </style>
