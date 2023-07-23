@@ -21,11 +21,10 @@ export const useStore = defineStore('store', {
       transcriptionMetadata: {} as any, // metadata from the transcription api
       channelAlternative: { channel: 0, alternative: 0 } as ChannelAlternative, // currently selected channel and alternative
       options: {
-        displayBy: 'paragraph' as 'word' | 'sentence' | 'paragraph' | 'utterance',
         showDetails: false,
       },
-      // audioPath: 'Fri-09-07-2007A.ogg',
-      // jsonPath: 'Fri-09-07-2007A.ogg.json',
+      audioPath: 'Fri-09-07-2007A.ogg',
+      jsonPath: 'Fri-09-07-2007A.ogg.json',
       currentBounded: { start: 0, end: 0 } as Bounded,
       currentTime: 0,
       indices: { // per-second index of objects in the transcription
@@ -39,7 +38,7 @@ export const useStore = defineStore('store', {
   },
   getters: {
     getAlternative: (state) => {
-      return state.transcription.results.channels[state.channelAlternative.channel].alternatives[state.channelAlternative.alternative]
+      return state.transcription.results?.channels[state.channelAlternative.channel].alternatives[state.channelAlternative.alternative]
     },
     currentWords: (state) => {
       if (state.currentBounded === null) return []
@@ -63,7 +62,7 @@ export const useStore = defineStore('store', {
   },
   actions: {
     updateRegion() {
-      // TODO: fix wavesurfer so everything doesn't have to be destroyed and recreated
+      // TODO: fix wavesurfer so everything doesn't have to be destroyed and recreated. the bug is in the regions plugin
       this.wsRegions?.destroy()
       const regions = RegionsPlugin.create()
       this.wsRegions = regions

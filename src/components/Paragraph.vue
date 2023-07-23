@@ -37,7 +37,7 @@ const speakers = store.speakers
 </script>
 
 <template>
-  <textarea rows="1" cols="12" class="speaker" v-if="props.paragraph.speaker != props.lastSpeaker"
+  <textarea rows="1" cols="10" class="speaker" v-if="props.paragraph.speaker != props.lastSpeaker"
     v-model="speakers[props.paragraph.speaker]" />
   <span class="speaker" v-else=""></span>
   <div :class="'words ' + playing()">

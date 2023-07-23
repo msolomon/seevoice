@@ -1,15 +1,21 @@
 <template>
   <div class="about">
-    <h1>This is an about page</h1>
+    <h1>About</h1>
+
+    <p>Copyright 2003, Michael Solomon. All rights reserved.</p>
   </div>
 </template>
 
 <style>
-@media (min-width: 1024px) {
+/* @media (min-width: 1024px) {
   .about {
     min-height: 100vh;
     display: flex;
     align-items: center;
   }
+} */
+
+.about {
+  border-top: 1px solid var(--color-border);
 }
 </style>

@@ -1,33 +1,38 @@
 
+import { storeToRefs } from "pinia"
 import type { DeepgramResult, Bounded } from "./types/deepgram"
 import { useStore } from '@/stores/store'
 
 export function parseDeepgramResult(result: DeepgramResult): void {
-  const store = useStore()
-  store.transcription = result
+  const store = storeToRefs(useStore())
+  store.transcription.value = result
   const { metadata, results } = result
-  store.transcriptionMetadata = metadata
+  store.transcriptionMetadata.value = metadata
 
-
-  results.channels.forEach((channel) => {
+  results.channels.forEach((channel, channelNum) => {
+    let alternativeNum = 0
     for (const alternative of channel.alternatives) {
+      if (alternative.paragraphs == null) {
+        console.warn('no paragraphs in alternative, skipping alternative', alternative)
+        store.transcription.value.results.channels[channelNum].alternatives.splice(alternativeNum, 1)
+        continue
+      }
       alternative.words.forEach((word) => {
-        fillIndex(store.indices.word, word)
-        if (store.speakers[word.speaker] === undefined) store.speakers[word.speaker] = `Speaker ${word.speaker}`
+        fillIndex(store.indices.value.word, word)
+        if (store.speakers.value[word.speaker] === undefined) store.speakers.value[word.speaker] = `Speaker ${word.speaker}`
       })
 
       alternative.paragraphs?.paragraphs.forEach((paragraph) => {
-        fillIndex(store.indices.paragraph, paragraph)
+        fillIndex(store.indices.value.paragraph, paragraph)
         paragraph.sentences.forEach((sentence) => {
-          fillIndex(store.indices.sentence, sentence)
+          fillIndex(store.indices.value.sentence, sentence)
         })
       })
-      // break // only do the first alternative
     }
   })
 
   results.utterances.forEach((utterance) => {
-    fillIndex(store.indices.utterance, utterance)
+    fillIndex(store.indices.value.utterance, utterance)
     // I don't think we want to fill the index with the words in the utterance,
     // because they're already in the index from the channel.alternatives
   })
@@ -44,7 +49,7 @@ function fillIndex(index: Bounded[][], item: Bounded): void {
   }
 }
 
-export function fetchFromIndex<T extends Proxy<Bounded>>(index: T[][], item: Bounded, getKey: ((T) => any)): T[] {
+export function fetchFromIndex<T extends Proxy<Bounded>>(index: T[][], item: Bounded, getKey: ((t: T) => any)): T[] {
   let slot = Math.floor(item.start)
   const finalSlot = Math.ceil(item.end)
   let result: T[] = []

@@ -1,25 +1,15 @@
 <script setup lang="ts">
 import Details from '@/components/Details.vue';
-import TheWelcome from '../components/TheWelcome.vue'
 import WaveSurfer from '../components/WaveSurfer.vue'
 import Transcription from '@/components/Transcription.vue';
 import { useStore } from '@/stores/store'
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { parseDeepgramResult } from '@/see';
+import { onBeforeMount, onMounted, watchEffect } from 'vue';
 const store = useStore()
 
 const router = useRouter()
-
-function maybeRedirect() {
-
-  const queryParams = router.currentRoute.value.query
-  if (!queryParams.jsonPath || !queryParams.audioPath) {
-    if (!queryParams.jsonPath) { queryParams.jsonPath = 'Thu-8-21-2008.ogg.json' }
-    if (!queryParams.audioPath) { queryParams.audioPath = 'Thu-8-21-2008.ogg' }
-    router.push({ query: queryParams })
-  }
-}
-maybeRedirect()
+const route = useRoute()
 
 function onFileChange(e: any) {
   var files = e.target?.files || e.dataTransfer?.files;
@@ -32,14 +22,14 @@ function onUrlChange(e: any) {
   const url: string = e.target?.value
   if (!url) return
   if (url.toLowerCase().endsWith('.json')) {
-    router.currentRoute.value.query.jsonPath = url
+    route.query.jsonPath = url
     fetch(url)
       .then((response) => response.json())
       .then((data) => {
         parseDeepgramResult(data)
       })
   } else {
-    router.currentRoute.value.query.audioPath = url
+    route.query.audioPath = url
     store.wavesurfer?.load(url)
   }
 }
@@ -64,7 +54,7 @@ async function handleUpload(file: File) {
 
 function flatten(data: object) {
   let result: any = {}
-  function recurse(cur: any, prop) {
+  function recurse(cur: any, prop: string) {
     if (Object(cur) !== cur) {
       result[prop] = cur
     } else if (Array.isArray(cur)) {
@@ -87,37 +77,34 @@ function flatten(data: object) {
 </script>
 
 <template>
-  {{ maybeRedirect() }}
   <main>
     <div>
       <!-- <div class="uploads">
-        <form method="post" enctype="multipart/form-data">
+        <form method="get" enctype="multipart/form-data">
           <label>
             Audio file:
             <input type="file" name="audioFile" id="audioFile" @submit.native.prevent="" @change="onFileChange">
           </label>
           <label>
             Audio URL:
-            <input type="text" name="audioUrl" id="audioUrl" @submit.native.prevent="" @change="onUrlChange"
-              :value="router.currentRoute.value.query.audioPath">
+            <input type="text" formmethod="get" v-model="route.query.audioPath">
           </label>
         </form>
-        <form method="post" enctype="multipart/form-data">
+        <form method="get" enctype="multipart/form-data">
           <label>
             Deepgram JSON file:
-            <input type="file" name="transcriptFile" id="transcriptFile" @submit.native.prevent="" @change="onFileChange">
+            <input type="file" name="jsonFile" id="jsonFile" @submit.native.prevent="" @change="onFileChange">
           </label>
           <label>
             JSON URL:
-            <input type="text" name="jsonUrl" id="jsonUrl" @submit.native.prevent="" @change="onUrlChange"
-              :value="router.currentRoute.value.query.jsonPath">
+            <input type="text" formmethod="get" v-model="route.query.jsonPath">
           </label>
         </form>
       </div> -->
       <WaveSurfer />
       <div>
         <label>
-          Show Details
+          Show details
           <input type="checkbox" v-model="store.options.showDetails">
         </label>
       </div>
@@ -133,7 +120,7 @@ function flatten(data: object) {
           <div>
             <div class="wrapper" v-for="(md, k) in flatten(store.transcriptionMetadata)" :key="k">
               <span class="metadataKey">{{ k }}</span>:
-              <pre class="metadataValue">{{ md }}</pre>
+              <p class="metadataValue">{{ md }}</p>
             </div>
           </div>
         </div>

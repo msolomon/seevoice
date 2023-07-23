@@ -1,60 +1,42 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { routeLocationKey, useRoute } from 'vue-router'
+import { ref, onMounted, watchEffect, watch } from 'vue'
+import { routeLocationKey, useRoute, useRouter } from 'vue-router'
 import type { DeepgramResult } from '@/types/deepgram'
 
 import { useStore } from '@/stores/store'
 import { parseDeepgramResult } from '@/see';
-import Word from '@/components/Word.vue'
 import Paragraph from '@/components/Paragraph.vue'
 import { storeToRefs } from 'pinia';
 
 const store = storeToRefs(useStore())
-const route = useRoute()
-const jsonPath = route.query.jsonPath?.toString() || ''
-console.log('jsonPath', jsonPath)
 
-async function fetchJsonData() {
-  await fetch(jsonPath)
+const jsonPath = store.jsonPath
+
+async function fetchData() {
+  console.log('fetching json data', jsonPath.value)
+  if (jsonPath.value) return await fetch(jsonPath.value)
     .then((response) => response.json())
-    .then((data: DeepgramResult) => {
-      parseDeepgramResult(data)
-    })
+    .then((data: DeepgramResult) => parseDeepgramResult(data))
 }
 
-await fetchJsonData()
+watch(jsonPath, fetchData)
+await fetchData()
+await fetchData() // TODO: fix. we have to wait for a second tick
 
-const renderWords = store.options.value.displayBy == 'word'
-const renderSentences = store.options.value.displayBy == 'sentence'
-const renderParagraphs = store.options.value.displayBy == 'paragraph'
-const renderUtterances = store.options.value.displayBy == 'utterance'
-const alternative = store.getAlternative
-
-// hack if paragraphs are missing from some alternative transcriptions
-// TODO: fix
-function verifyParagraphs() {
-  if (renderParagraphs) {
-    while (store.getAlternative.value.paragraphs == null && store.transcription.value.results.channels[store.channelAlternative.value.channel].alternatives.length > store.channelAlternative.value.alternative) {
-      store.channelAlternative.value.alternative += 1
-    }
-  }
-}
-verifyParagraphs()
-const paragraphs = store.getAlternative.value.paragraphs?.paragraphs
+// const alternative = jsonPath && store.getAlternative
+const paragraphs = store.transcription.value?.results?.channels[store.channelAlternative.value?.channel].alternatives[store.channelAlternative.value?.alternative]?.paragraphs?.paragraphs
 </script>
 
 <template>
   <div class="transcription">
-    <h2 class="green">Transcription for {{ $route.query.jsonPath }}</h2>
-    <div v-if="renderWords" class="words">
-      <Word v-for="word in alternative.words" :key="JSON.stringify(word)" :word="word" />
-    </div>
-
-    <div v-if="renderParagraphs" class="paragraphs">
+    <h2 class="green">Transcription for {{ jsonPath }}</h2>
+    <div v-if="paragraphs" class="paragraphs">
       <div class="wrapper">
         <Paragraph v-for="(paragraph, i) in paragraphs" :key="JSON.stringify(paragraph)" :paragraph="paragraph"
           :lastSpeaker="(paragraphs && paragraphs[i - 1]) ? paragraphs[i - 1].speaker : -1" />
       </div>
+    </div>
+    <div v-else>Loading...
     </div>
   </div>
 </template>

@@ -2,6 +2,7 @@
 import { useStore } from '@/stores/store';
 import type { Word } from '@/types/deepgram';
 import Color from 'colorjs.io'
+import { watchEffect } from 'vue';
 
 const props = defineProps<{
   word: Word
@@ -10,7 +11,6 @@ const props = defineProps<{
 const store = useStore()
 
 function setHoverData() {
-  // console.log('hovering', JSON.stringify(props.word))
   store.currentBounded = props.word
   store.updateRegion() // TODO: do this with reactivity
 }
