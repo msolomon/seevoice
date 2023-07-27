@@ -2,13 +2,20 @@ import { ref, computed, type Ref } from 'vue'
 import { defineStore } from 'pinia'
 import WaveSurfer from 'wavesurfer.js'
 
-import type { Word, Paragraph, Utterance, Sentence, DeepgramResult, Bounded } from 'src/types/deepgram'
+import type {
+  Word,
+  Paragraph,
+  Utterance,
+  Sentence,
+  DeepgramResult,
+  Bounded
+} from 'src/types/deepgram'
 import { fetchFromIndex } from '@/see'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 
 type ChannelAlternative = {
-  channel: number;
-  alternative: number;
+  channel: number
+  alternative: number
 }
 
 export const useStore = defineStore('store', {
@@ -21,24 +28,29 @@ export const useStore = defineStore('store', {
       transcriptionMetadata: {} as any, // metadata from the transcription api
       channelAlternative: { channel: 0, alternative: 0 } as ChannelAlternative, // currently selected channel and alternative
       options: {
-        showDetails: false,
+        showDetails: false
       },
       audioPath: 'Fri-09-07-2007A.ogg',
       jsonPath: 'Fri-09-07-2007A.ogg.json',
       currentBounded: { start: 0, end: 0 } as Bounded,
       currentTime: 0,
-      indices: { // per-second index of objects in the transcription
+      indices: {
+        // per-second index of objects in the transcription
         word: [] as Word[][],
         sentence: [] as Sentence[][],
 
         paragraph: [] as Paragraph[][],
-        utterance: [] as Utterance[][],
+        utterance: [] as Utterance[][]
       },
+      audioError: null as string | null,
+      transcriptionError: null as string | null
     }
   },
   getters: {
     getAlternative: (state) => {
-      return state.transcription.results?.channels[state.channelAlternative.channel].alternatives[state.channelAlternative.alternative]
+      return state.transcription.results?.channels[state.channelAlternative.channel].alternatives[
+        state.channelAlternative.alternative
+      ]
     },
     currentWords: (state) => {
       if (state.currentBounded === null) return []
@@ -58,7 +70,7 @@ export const useStore = defineStore('store', {
     },
     getSpeaker: (state) => (speaker: number) => {
       return state.transcriptionMetadata.speakers[speaker] || `Speaker ${speaker}`
-    },
+    }
   },
   actions: {
     updateRegion() {
@@ -71,11 +83,11 @@ export const useStore = defineStore('store', {
         content: this.hoveredDesc,
         color: 'hsla(100, 100%, 30%, 0.5)',
         start: this.currentBounded.start,
-        end: this.currentBounded.end,
+        end: this.currentBounded.end
       })
     },
     jumpToAudio() {
       this.wavesurfer?.seekTo(this.currentBounded.start / this.transcriptionMetadata.duration)
     }
-  },
+  }
 })

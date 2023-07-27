@@ -9,15 +9,12 @@ const props = defineProps<{
   lastSpeaker?: number
 }>()
 
-const rawStore = useStore()
-const store = storeToRefs(rawStore)
+const store = storeToRefs(useStore())
 
 function getWords() {
 
   const words = store.getAlternative.value.words
-
   const start = words.findIndex(w => w.start == props.paragraph.start)
-
   const paragraphWords: Word[] = []
 
   for (let i = 0; i < props.paragraph.num_words; i++) {
@@ -25,10 +22,10 @@ function getWords() {
   }
   return paragraphWords
 }
+const approx = 0.1 // loosely match words. in seconds
 function playing() {
-  const playingThis = rawStore.currentTime >= props.paragraph.start && rawStore.currentTime <= props.paragraph.end
-  const playing = playingThis ? 'playing' : ''
-  return playing
+  return store.currentTime.value >= props.paragraph.start - approx &&
+    store.currentTime.value <= props.paragraph.end + approx
 }
 
 const paragraphWords = getWords()
@@ -40,7 +37,7 @@ const speakers = store.speakers
   <textarea rows="1" cols="10" class="speaker" v-if="props.paragraph.speaker != props.lastSpeaker"
     v-model="speakers[props.paragraph.speaker]" />
   <span class="speaker" v-else=""></span>
-  <div :class="'words ' + playing()">
+  <div :class="'words' + (playing() ? ' playing' : '')">
     <WordVue v-for=" word in paragraphWords " :key="JSON.stringify(word)" :word="word" />
   </div>
 </template>
@@ -54,7 +51,7 @@ const speakers = store.speakers
 }
 
 .words {
-  margin-left: 1em;
+  padding-left: 1em;
   text-indent: -1em;
   width: fit-content;
 }

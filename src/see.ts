@@ -1,6 +1,5 @@
-
-import { storeToRefs } from "pinia"
-import type { DeepgramResult, Bounded } from "./types/deepgram"
+import { storeToRefs } from 'pinia'
+import type { DeepgramResult, Bounded } from './types/deepgram'
 import { useStore } from '@/stores/store'
 
 export function parseDeepgramResult(result: DeepgramResult): void {
@@ -14,12 +13,16 @@ export function parseDeepgramResult(result: DeepgramResult): void {
     for (const alternative of channel.alternatives) {
       if (alternative.paragraphs == null) {
         console.warn('no paragraphs in alternative, skipping alternative', alternative)
-        store.transcription.value.results.channels[channelNum].alternatives.splice(alternativeNum, 1)
+        store.transcription.value.results.channels[channelNum].alternatives.splice(
+          alternativeNum,
+          1
+        )
         continue
       }
       alternative.words.forEach((word) => {
         fillIndex(store.indices.value.word, word)
-        if (store.speakers.value[word.speaker] === undefined) store.speakers.value[word.speaker] = `Speaker ${word.speaker}`
+        if (store.speakers.value[word.speaker] === undefined)
+          store.speakers.value[word.speaker] = `Speaker ${word.speaker}`
       })
 
       alternative.paragraphs?.paragraphs.forEach((paragraph) => {
@@ -31,7 +34,7 @@ export function parseDeepgramResult(result: DeepgramResult): void {
     }
   })
 
-  results.utterances.forEach((utterance) => {
+  results.utterances?.forEach((utterance) => {
     fillIndex(store.indices.value.utterance, utterance)
     // I don't think we want to fill the index with the words in the utterance,
     // because they're already in the index from the channel.alternatives
@@ -49,7 +52,11 @@ function fillIndex(index: Bounded[][], item: Bounded): void {
   }
 }
 
-export function fetchFromIndex<T extends Proxy<Bounded>>(index: T[][], item: Bounded, getKey: ((t: T) => any)): T[] {
+export function fetchFromIndex<T extends Bounded>( // really, Proxy<Bounded>
+  index: T[][],
+  item: Bounded,
+  getKey: (t: T) => any
+): T[] {
   let slot = Math.floor(item.start)
   const finalSlot = Math.ceil(item.end)
   let result: T[] = []
@@ -67,5 +74,30 @@ export function fetchFromIndex<T extends Proxy<Bounded>>(index: T[][], item: Bou
     }
     slot++
   }
+  return result
+}
+
+export function colorizeRed(confidence: number) {
+  const alpha = (1.0 - confidence) * 0.6
+  return `rgba(230, 50, 75, ${alpha})`
+}
+
+export function flatten(data: object) {
+  let result: any = {}
+  function recurse(cur: any, prop: string) {
+    if (Object(cur) !== cur) {
+      result[prop] = cur
+    } else if (Array.isArray(cur)) {
+      for (let i = 0; i < cur.length; i++) recurse(cur[i], prop + '[' + i + ']')
+    } else {
+      let isEmpty = true
+      for (let p in cur) {
+        isEmpty = false
+        recurse(cur[p], prop ? prop + '.' + p : p)
+      }
+      if (isEmpty && prop) result[prop] = {}
+    }
+  }
+  recurse(data, '')
   return result
 }

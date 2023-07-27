@@ -1,52 +1,51 @@
 # seevoice
 
-This template should help get you started developing with Vue 3 in Vite.
+SeeVoice uses Vue 3 and Vite, along with a small list of dependencies.
 
-## Recommended IDE Setup
+Presently, it runs best in dev mode.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+## Usage
 
-## Type Support for `.vue` Imports in TS
+First, clone the repo.
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+Then, get a transcript from Deepgram for your audio file:
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
-
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+```bash
+curl \
+  --request POST \
+  --header 'Authorization: Token <YOUR_DEEPGRAM_API_KEY>' \
+  --url 'https://api.deepgram.com/v1/listen?tier=nova&language=en-US&punctuate=true&diarize=true&smart_format=true&alternatives=4&paragraphs=true' \
+  --data-binary @myfile.mp3 \
+  -o myfile.mp3.json
 ```
 
-### Compile and Hot-Reload for Development
+Then, move files you want to read into the `public` folder, or alternatively symlink them.
+`public` will be served in webserver root.
 
-```sh
-npm run dev
+```bash
+ln -s /path/to/myfile.mp3 public/
+ln -s /path/to/myfile.mp3.json public/
+cp /path/to/myfile2.mp3* public/
 ```
 
-### Type-Check, Compile and Minify for Production
+Then, run the following commands:
 
-```sh
-npm run build
+```bash
+yarn install
+yarn dev
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+This opens a webserver at `localhost:5173` by default.
+Visit this URL in your browser with `audioPath` and `jsonPath` query parameters:
 
-```sh
-npm run test:unit
-```
+http://localhost:5173/?audioPath=myfile.mp3&jsonPath=myfile.mp3.json
 
-### Lint with [ESLint](https://eslint.org/)
+Enjoy browsing your transcript!
 
-```sh
-npm run lint
-```
+# Features
+
+- Click on a word to play the audio from that point in the transcript
+- Red words are low confidence transcriptions
+- Hover over a word to see it in the transcript
+- With "Details" enabled, see alternate word transcriptions and confidence scores
+- Zoom and browse the waveform view

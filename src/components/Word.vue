@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useStore } from '@/stores/store';
 import type { Word } from '@/types/deepgram';
-import Color from 'colorjs.io'
-import { watchEffect } from 'vue';
+import { colorizeRed } from '@/see';
 
 const props = defineProps<{
   word: Word
@@ -15,13 +14,7 @@ function setHoverData() {
   store.updateRegion() // TODO: do this with reactivity
 }
 
-const fullColor = new Color("#e6324b")
-function colorize(confidence: number) {
-  fullColor.alpha = (1.0 - confidence) * 0.6
-  return fullColor.toString()
-}
-
-const color = colorize(props.word.confidence)
+const color = colorizeRed(props.word.confidence)
 </script>
 
 <template>

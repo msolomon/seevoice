@@ -3,16 +3,11 @@ import { ref, onMounted } from 'vue'
 import WaveSurfer from 'wavesurfer.js'
 import Minimap from 'wavesurfer.js/dist/plugins/minimap.js'
 import Timeline from 'wavesurfer.js/dist/plugins/timeline.js'
-import Regions from 'wavesurfer.js/dist/plugins/regions.js'
 
 import { useStore } from '@/stores/store'
 import { storeToRefs } from 'pinia'
-import { useRoute } from 'vue-router'
 
-const rawStore = useStore()
-const store = storeToRefs(rawStore)
-const route = useRoute()
-const audioPath = route.query.audioPath?.toString() ?? ''
+const store = storeToRefs(useStore())
 
 function secondsToLabel(seconds: number) {
   let minutes = Math.floor(seconds / 60)
@@ -25,29 +20,28 @@ function secondsToLabel(seconds: number) {
 }
 
 const loading = ref(true)
-
-const region = store.activeRegion?.value
-const bounded = store.currentBounded
-if (region) {
-  console.log('updating region', store.currentBounded)
-  region.start = bounded.value.start
-  region.end = bounded.value.end
-}
-
+const audioPath = store.audioPath
+const audioError = store.audioError
 
 onMounted(() => {
+
+  fetch(audioPath.value, { method: 'HEAD' })
+    .then((response) => {
+      if (response.status == 404) { audioError.value = `File not found: ${audioPath.value}` }
+    })
+    .catch((error) => { audioError.value = `Error loading ${audioPath.value}: ${error}` })
+
+  // easier to add here and have a JS reference to the audio element
   const audio = new Audio()
   audio.controls = true
   audio.style.width = '100%'
   document.getElementById('audio')?.appendChild(audio)
 
-  const regions = Regions.create()
   const wavesurfer = WaveSurfer.create({
     media: audio,
     container: '#waveform',
     waveColor: '#00bd7e',
     progressColor: '#006644',
-    url: audioPath,
 
     minPxPerSec: 5,
     barWidth: 2,
@@ -55,12 +49,11 @@ onMounted(() => {
     barRadius: 2,
 
     plugins: [
-      regions,
       Minimap.create({
         container: '#waveform',
-        height: 20,
-        waveColor: '#ddd',
-        progressColor: '#999',
+        height: 24,
+        waveColor: '#00bd7e',
+        progressColor: '#006644',
       }),
       Timeline.create({
         height: 20,
@@ -77,6 +70,15 @@ onMounted(() => {
     ],
   })
 
+  wavesurfer.on('ready', () => {
+    audioError.value = null
+    loading.value = false
+  })
+
+  wavesurfer
+    .load(audioPath.value)
+    .catch((error) => audioError.value = `Error loading ${audioPath.value}: ${error}`)
+
   wavesurfer.once('decode', () => {
     const slider = document.querySelector('input[type="range"]')
 
@@ -89,28 +91,24 @@ onMounted(() => {
   wavesurfer.once('interaction', () => {
     wavesurfer.play()
   })
+  wavesurfer.on('timeupdate', (ts) => store.currentTime.value = ts)
 
-  wavesurfer.on('ready', () => loading.value = false)
-  wavesurfer.on('timeupdate', (ts) => rawStore.currentTime = ts)
-
-  rawStore.wavesurfer = wavesurfer
-  rawStore.wsRegions = regions
+  store.wavesurfer.value = wavesurfer
+  useStore().updateRegion()
 })
 </script>
 
 <template>
-  <h4 class="green">{{ audioPath }}</h4>
-  <div v-if="loading"> Loading {{ audioPath }}...</div>
-  <label style="line-break: normal;">
-    <input type="range" min="1" max="1000" value="5" style="width: 100%" />
+  <h3 class="green"><strong>Audio:</strong> {{ audioPath }}</h3>
+  <div v-if="audioError != null"> {{ audioError }}</div>
+  <div v-else-if="loading"> Loading {{ audioPath }}...</div>
+  <label class="zoom">
+    Zoom:
+    <input type="range" min="1" max="500" value="5" />
   </label>
   <div id="waveform"></div>
   <div id="audio"></div>
 </template>
-
-<script lang="ts">
-
-</script>
 
 <style scoped>
 h1 {
@@ -124,16 +122,15 @@ h3 {
   font-size: 1.2rem;
 }
 
-.greetings h1,
-.greetings h3 {
-  text-align: center;
+.zoom {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-@media (min-width: 1024px) {
-
-  .greetings h1,
-  .greetings h3 {
-    text-align: left;
-  }
+.zoom input {
+  margin-left: 1em;
+  width: 100%
 }
 </style>

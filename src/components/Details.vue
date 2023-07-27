@@ -4,18 +4,12 @@ import { storeToRefs } from 'pinia';
 import WordDetail from './WordDetail.vue';
 
 const store = storeToRefs(useStore())
-
-const words = store.currentWords
-
-const hoveredDesc = store.hoveredDesc
-
-const title = hoveredDesc.value ? 'Details' : `Details for "${hoveredDesc.value}"`
 </script>
 
 <template>
   <div class="details">
-    <h2>{{ title }}</h2>
-    <div v-if="words.length > 0" class="words-details">
+    <h2>{{ store.hoveredDesc.value ? `Details for "${store.hoveredDesc.value}"` : 'Details' }}</h2>
+    <div v-if="store.currentWords.value.length > 0" class="words-details">
       <h3>Words</h3>
       <p class="desc">
         Shows how confident the software is in transcribing audio into different word choices spoken by various people in
@@ -30,7 +24,7 @@ const title = hoveredDesc.value ? 'Details' : `Details for "${hoveredDesc.value}
             <th style="width: 0">Speaker Confidence</th>
           </tr>
         </thead>
-        <WordDetail v-for="word in words" :word="word" />
+        <WordDetail v-for="word in store.currentWords.value" :word="word" />
       </table>
       <br />
     </div>
