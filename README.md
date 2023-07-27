@@ -1,8 +1,19 @@
-# seevoice
+# 👁️See🎙️Voice
 
-SeeVoice uses Vue 3 and Vite, along with a small list of dependencies.
+SeeVoice is a (hacked-together) tool for exploring audio transcriptions from Deepgram.
 
-Presently, it runs best in dev mode.
+- Click on a word to play the audio from that point in the transcript
+- Red words are low confidence transcriptions
+- Hover over a word to see it in the transcript
+- With "Details" enabled, see alternate word transcriptions and confidence scores
+- Zoom and browse the waveform view
+- Currently, only [Deepgram](https://deepgram.com) transcripts are supported (I have no affiliation)
+
+  
+
+https://github.com/msolomon/seevoice/assets/267142/07b3f564-0395-4ad9-941f-ae129d6541de
+
+
 
 ## Usage
 
@@ -42,10 +53,7 @@ http://localhost:5173/?audioPath=myfile.mp3&jsonPath=myfile.mp3.json
 
 Enjoy browsing your transcript!
 
-# Features
+# Tech
+SeeVoice uses Vue 3 and Vite, along with a small list of dependencies.
 
-- Click on a word to play the audio from that point in the transcript
-- Red words are low confidence transcriptions
-- Hover over a word to see it in the transcript
-- With "Details" enabled, see alternate word transcriptions and confidence scores
-- Zoom and browse the waveform view
+Presently, it runs best in dev mode.
